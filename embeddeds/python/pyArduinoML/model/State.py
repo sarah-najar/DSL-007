@@ -9,7 +9,7 @@ class State(NamedElement):
 
     """
 
-    def __init__(self, name, actions=(), transition=None):
+    def __init__(self, name, actions=(), transitions=None):
         """
         Constructor.
 
@@ -19,16 +19,12 @@ class State(NamedElement):
         :return:
         """
         NamedElement.__init__(self, name)
-        self.transition = transition
+        self.transitions = list(transitions) if transitions is not None else []
         self.actions = actions
 
     def settransition(self, transition):
-        """
-        Sets the transition of the state
-        :param transition: Transition
-        :return:
-        """
-        self.transition = transition
+        # kept for backward compatibility: append as single transition
+        self.transitions = [transition]
 
     def setup(self):
         """
@@ -38,14 +34,25 @@ class State(NamedElement):
         """
         rtr = ""
         rtr += "void state_%s() {\n" % self.name
-        # generate code for state actions
+        # actions
         for action in self.actions:
-            rtr += "\tdigitalWrite(%s, %s);\n" % (action.brick.name, SIGNAL.value(action.value))
-            rtr += "\tboolean guard =  millis() - time > debounce;\n"
-        # generate code for the transition
-        transition = self.transition
-        rtr += "\tif (digitalRead(%s) == %s && guard) {\n\t\ttime = millis(); state_%s();\n\t} else {\n\t\tstate_%s();\n\t}" \
-               % (transition.sensor.name, SIGNAL.value(transition.value), transition.nextstate.name, self.name)
-        # end of state
+            if hasattr(action, 'to_arduino'):
+                rtr += action.to_arduino() + "\n"
+            else:
+                rtr += "\tdigitalWrite(%s, %s);\n" % (action.brick.name, SIGNAL.value(action.value))
+        rtr += "\tboolean guard =  millis() - time > debounce;\n"
+        # transitions chain
+        if len(self.transitions) > 0:
+            rtr += "\tif (" + " || ".join(map(lambda t: t.condition_expr(), filter(lambda t: hasattr(t, 'condition_expr'), self.transitions))) + ") { /* composite guard present */ }\n"
+        # Render each transition with priority order
+        first = True
+        for t in self.transitions:
+            prefix = "\tif" if first else "\telse if"
+            cond = t.condition_expr()
+            rtr += "%s (%s) {\n\t\ttime = millis(); state_%s();\n\t}" % (prefix, cond, t.next_state_name())
+            rtr += "\n"
+            first = False
+        # default self-loop
+        rtr += "\telse {\n\t\tstate_%s();\n\t}" % self.name
         rtr += "\n}\n"
         return rtr

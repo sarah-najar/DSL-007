@@ -1,19 +1,31 @@
-__author__ = 'pascalpoizat'
+__author__ = 'arduino-ml'
 
-class Transition :
-    """
-    A transition between two states.
-    """
+import SIGNAL
 
-    def __init__(self, sensor, value, nextstate):
-        """
-        Constructor.
 
-        :param sensor: Sensor, sensor which value is checked to trigger the transition
-        :param value: SIGNAL, value that the sensor must have to trigger the transition
-        :param nextstate: State, state to change to when the transition is triggered
-        :return:
-        """
-        self.sensor = sensor
-        self.value = value
+class Transition:
+    pass
+
+
+class ConditionalTransition(Transition):
+    def __init__(self, condition, nextstate):
+        self.condition = condition
         self.nextstate = nextstate
+
+    def condition_expr(self):
+        return self.condition.to_arduino()
+
+    def next_state_name(self):
+        return self.nextstate.name
+
+
+class TemporalTransition(Transition):
+    def __init__(self, duration_ms, nextstate):
+        self.duration_ms = int(duration_ms)
+        self.nextstate = nextstate
+
+    def condition_expr(self):
+        return "millis() - time >= %d" % self.duration_ms
+
+    def next_state_name(self):
+        return self.nextstate.name

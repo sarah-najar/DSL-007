@@ -22,8 +22,8 @@ class StateBuilder:
         """
         self.root = root
         self.state = state
-        self.actions = []  # List[StateActionBuilder], builders for the state actions
-        self.transition = None  # TransitionBuilder, builder for the state transition (unique in the current meta-model)
+        self.actions = []  # List[StateActionBuilder]
+        self.transitions = []  # List[TransitionBuilder]
 
     def set(self, actuator):
         """
@@ -44,8 +44,47 @@ class StateBuilder:
         :return: TransitionBuilder, the builder for the transition
         """
         transition = TransitionBuilder(self, sensor)
-        self.transition = transition
+        self.transitions.append(transition)
         return transition
+
+    def after(self, amount, unit=None):
+        t = TransitionBuilder(self, None)
+        t.after(amount, unit)
+        self.transitions.append(t)
+        return t
+
+    # convenience helpers
+    def whenBothHigh(self, s1, s2):
+        t = TransitionBuilder(self, None)
+        t.both_high(s1, s2)
+        self.transitions.append(t)
+        return t
+
+    def whenPotAtLeast(self, pot, th):
+        t = TransitionBuilder(self, None)
+        t.pot_at_least(pot, th)
+        self.transitions.append(t)
+        return t
+
+    def whenPotBelow(self, pot, th):
+        t = TransitionBuilder(self, None)
+        t.pot_below(pot, th)
+        self.transitions.append(t)
+        return t
+
+    def whenButtonAndPotAtLeast(self, button, pot, th):
+        t = TransitionBuilder(self, None)
+        from pyArduinoML.model.conditions import AndCondition, SensorLevelCondition, AnalogThresholdCondition
+        t.condition = AndCondition(SensorLevelCondition(button, 'HIGH'), AnalogThresholdCondition(pot, th, True))
+        self.transitions.append(t)
+        return t
+
+    def whenEitherButtonLowOrPotBelow(self, button, pot, th):
+        t = TransitionBuilder(self, None)
+        from pyArduinoML.model.conditions import OrCondition, SensorLevelCondition, AnalogThresholdCondition
+        t.condition = OrCondition(SensorLevelCondition(button, 'LOW'), AnalogThresholdCondition(pot, th, False))
+        self.transitions.append(t)
+        return t
 
     def get_contents(self, bricks):
         """
@@ -58,7 +97,7 @@ class StateBuilder:
         A 2-step build is required (due to the meta-model) to get references right while avoiding bad typing tricks
         such as passing a TransitionBuilder instead of a Transition.
         """
-        return State(self.state, map(lambda builder: builder.get_contents(bricks), self.actions), None)
+        return State(self.state, map(lambda builder: builder.get_contents(bricks), self.actions), [])
 
     def get_contents2(self, bricks, states):
         """
@@ -74,14 +113,35 @@ class StateBuilder:
         A 2-step build is required (due to the meta-model) to get references right while avoiding bad typing tricks
         such as passing a TransitionBuilder instead of a Transition.
         """
-        if self.transition.sensor not in bricks.keys():
-            raise UndefinedBrick()
         if self.state not in states.keys():
             raise UndefinedState()
-        if self.transition.next_state not in states.keys():
-            raise UndefinedState()
-        transition = Transition(bricks[self.transition.sensor],
-                                self.transition.value,
-                                states[self.transition.next_state])
-        states[self.state].transition = transition
+        transitions = []
+        for t in self.transitions:
+            # resolve brick references in composite conditions
+            # For builders, SensorLevelCondition may temporarily carry names instead of objects
+            if hasattr(t, 'condition') and t.condition is not None:
+                cond = t.condition
+                try:
+                    from pyArduinoML.model.conditions import SensorLevelCondition, AnalogThresholdCondition, AndCondition, OrCondition
+                    def resolve_cond(c):
+                        if isinstance(c, SensorLevelCondition):
+                            s = c.sensor
+                            if isinstance(s, str) and s in bricks:
+                                c.sensor = bricks[s]
+                            return c
+                        if isinstance(c, AnalogThresholdCondition):
+                            s = c.sensor
+                            if isinstance(s, str) and s in bricks:
+                                c.sensor = bricks[s]
+                            return c
+                        if isinstance(c, AndCondition) or isinstance(c, OrCondition):
+                            c.left = resolve_cond(c.left)
+                            c.right = resolve_cond(c.right)
+                            return c
+                        return c
+                    t.condition = resolve_cond(cond)
+                except Exception:
+                    pass
+            transitions.append(t.get_contents(bricks, states))
+        states[self.state].transitions = transitions
 

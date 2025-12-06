@@ -1,6 +1,8 @@
 __author__ = 'pascalpoizat'
 
 from pyArduinoML.model.Action import Action
+from pyArduinoML.model.BuzzerAction import BuzzerAction
+from pyArduinoML.model.LCDAction import LCDAction
 from pyArduinoML.methodchaining.UndefinedBrick import UndefinedBrick
 
 
@@ -19,7 +21,8 @@ class StateActionBuilder:
         """
         self.root = root
         self.actuator = actuator
-        self.data = None  # SIGNAL, signal to send to the actuator
+        self.data = None  # SIGNAL, signal to send to the actuator or other payload
+        self.kind = 'actuator'  # 'actuator' | 'buzzer' | 'lcd'
 
     def to(self, data):
         """
@@ -29,6 +32,23 @@ class StateActionBuilder:
         :return: BehaviorBuilder, builder for the behavior
         """
         self.data = data
+        return self.root
+
+    # DSL helpers for buzzer
+    def shortBeep(self):
+        self.kind = 'buzzer'
+        self.data = 'SHORT'
+        return self.root
+
+    def longBeep(self):
+        self.kind = 'buzzer'
+        self.data = 'LONG'
+        return self.root
+
+    # DSL helper for lcd
+    def display(self, message):
+        self.kind = 'lcd'
+        self.data = str(message)
         return self.root
 
     def get_contents(self, bricks):
@@ -41,4 +61,9 @@ class StateActionBuilder:
         """
         if self.actuator not in bricks.keys():
             raise UndefinedBrick()
-        return Action(self.data, bricks[self.actuator])
+        target = bricks[self.actuator]
+        if self.kind == 'buzzer':
+            return BuzzerAction(target, self.data)
+        if self.kind == 'lcd':
+            return LCDAction(target, self.data)
+        return Action(self.data, target)

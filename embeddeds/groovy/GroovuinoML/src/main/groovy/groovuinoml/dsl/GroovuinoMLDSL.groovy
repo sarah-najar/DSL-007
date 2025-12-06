@@ -1,6 +1,7 @@
-package main.groovy.groovuinoml.dsl
+package groovuinoml.dsl
 
 import io.github.mosser.arduinoml.kernel.behavioral.TimeUnit
+import groovuinoml.dsl.GroovuinoMLBasescript
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer
 import io.github.mosser.arduinoml.kernel.structural.SIGNAL
@@ -15,7 +16,7 @@ class GroovuinoMLDSL {
 		binding = new GroovuinoMLBinding()
 		binding.setGroovuinoMLModel(new GroovuinoMLModel(binding));
 		configuration = getDSLConfiguration()
-		configuration.setScriptBaseClass("main.groovy.groovuinoml.dsl.GroovuinoMLBasescript")
+		configuration.setScriptBaseClass("groovuinoml.dsl.GroovuinoMLBasescript")
 		shell = new GroovyShell(configuration)
 		
 		binding.setVariable("high", SIGNAL.HIGH)

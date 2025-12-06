@@ -3,7 +3,7 @@ __author__ = 'pascalpoizat'
 from pyArduinoML.model.App import App
 from pyArduinoML.methodchaining.BrickBuilder import BrickBuilder
 from pyArduinoML.methodchaining.StateBuilder import StateBuilder
-from pyArduinoML.methodchaining.BrickBuilder import ACTUATOR, SENSOR
+from pyArduinoML.methodchaining.BrickBuilder import ACTUATOR, SENSOR, BUZZER, LCD, ANALOG_SENSOR
 
 
 class AppBuilder:
@@ -44,6 +44,21 @@ class AppBuilder:
         self.bricks.append(builder)
         return builder
 
+    def buzzer(self, name):
+        builder = BrickBuilder(self, name, BUZZER)
+        self.bricks.append(builder)
+        return builder
+
+    def lcd(self, name):
+        builder = BrickBuilder(self, name, LCD)
+        self.bricks.append(builder)
+        return builder
+
+    def potentiometer(self, name):
+        builder = BrickBuilder(self, name, ANALOG_SENSOR)
+        self.bricks.append(builder)
+        return builder
+
     def state(self, state):
         """
         Adds a state.
@@ -54,6 +69,14 @@ class AppBuilder:
         builder = StateBuilder(self, state)
         self.states.append(builder)
         return builder
+
+    def initial(self, state_name):
+        # ensure ordering with requested initial first
+        for i, sb in enumerate(self.states):
+            if sb.state == state_name:
+                self.states.insert(0, self.states.pop(i))
+                break
+        return self
 
     def get_contents(self):
         """

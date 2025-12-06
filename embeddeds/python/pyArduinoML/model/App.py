@@ -38,7 +38,7 @@ void setup() {
 }
 
 int state = LOW; int prev = HIGH;
-long time = 0; long debounce = 200;
+unsigned long time = 0; unsigned long debounce = 200;
 
 %s
 void loop() { state_%s(); }""" % ("\n".join(map(lambda b: b.declare(), self.bricks)),

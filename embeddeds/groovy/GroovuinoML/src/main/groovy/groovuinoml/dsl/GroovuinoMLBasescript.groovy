@@ -1,4 +1,4 @@
-package main.groovy.groovuinoml.dsl
+package groovuinoml.dsl
 
 import io.github.mosser.arduinoml.kernel.behavioral.*
 import io.github.mosser.arduinoml.kernel.structural.*
@@ -17,6 +17,11 @@ abstract class GroovuinoMLBasescript extends Script {
     // analog sensor (potentiometer) "name" on A{index}
     def potentiometer(String name) {
         [on: { aIndex -> ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createAnalogSensor(name, aIndex) }]
+    }
+
+    // digital actuator "name" pin n
+    def actuator(String name) {
+        [pin: { n -> ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createActuator(name, n) }]
     }
 
     // buzzer "name" pin n

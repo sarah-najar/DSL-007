@@ -16,3 +16,7 @@ class Action :
         """
         self.value = value
         self.brick = brick
+
+    def to_arduino(self):
+        import pyArduinoML.model.SIGNAL as SIGNAL
+        return "\tdigitalWrite(%s, %s);" % (self.brick.name, SIGNAL.value(self.value))

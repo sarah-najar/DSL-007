@@ -14,8 +14,8 @@ def demo1():
 
     :return:
     """
-    from pyArduinoML.methodchaining.AppBuilder import AppBuilder
-    from pyArduinoML.model.SIGNAL import HIGH, LOW
+from pyArduinoML.methodchaining.AppBuilder import AppBuilder
+from pyArduinoML.model.SIGNAL import HIGH, LOW
 
     app = AppBuilder("Switch!") \
         .sensor("BUTTON").on_pin(9) \
