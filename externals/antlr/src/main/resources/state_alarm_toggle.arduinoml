@@ -5,12 +5,12 @@ sensor button: 9
 actuator led: 12
 
 # States
-state off {
+state offState {
     set led to LOW
-    when button pushed goto on
+    when button pushed goto onState
 } initial
 
-state on {
+state onState {
     set led to HIGH
-    when button pushed goto off
+    when button pushed goto offState
 }
