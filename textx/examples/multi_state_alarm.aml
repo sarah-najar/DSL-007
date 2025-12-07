@@ -1,0 +1,19 @@
+application multi_state_alarm
+sensor button:9
+actuator led:12
+buzzer bz:8
+
+state quiet {
+    set led to LOW
+    when button is HIGH goto buzz
+} initial
+
+state buzz {
+    shortBeep bz
+    when button is HIGH goto light
+}
+
+state light {
+    set led to HIGH
+    when button is HIGH goto quiet
+}

@@ -1,0 +1,16 @@
+application lcd_status
+sensor button:9
+actuator led:12
+lcd screen:16x2
+
+state ready {
+    set led to LOW
+    display "READY" on screen
+    when button is HIGH goto alarm
+} initial
+
+state alarm {
+    set led to HIGH
+    display "ALARM ON" on screen
+    when button is LOW goto ready
+}

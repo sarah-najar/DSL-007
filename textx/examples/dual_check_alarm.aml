@@ -1,0 +1,13 @@
+application dual_check_alarm
+sensor b1:7
+sensor b2:8
+buzzer bz:10
+
+state idle {
+    when b1 is HIGH and b2 is HIGH goto alarm
+} initial
+
+state alarm {
+    shortBeep bz
+    when b1 is LOW or b2 is LOW goto idle
+}

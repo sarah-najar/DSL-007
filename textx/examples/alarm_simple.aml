@@ -1,0 +1,15 @@
+application alarm_simple
+sensor button:9
+actuator led:12
+buzzer bz:8
+
+state idle {
+    set led to LOW
+    when button is HIGH goto alarm
+} initial
+
+state alarm {
+    set led to HIGH
+    shortBeep bz
+    when button is LOW goto idle
+}
