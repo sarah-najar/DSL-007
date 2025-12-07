@@ -1,0 +1,13 @@
+application temporal_after_push
+sensor button:9
+actuator led:12
+
+state idle {
+    set led to LOW
+    when button is HIGH goto active
+} initial
+
+state active {
+    set led to HIGH
+    after 800 MS goto idle
+}

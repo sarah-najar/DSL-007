@@ -1,0 +1,13 @@
+application state_alarm_toggle
+sensor button:9
+actuator led:12
+
+state off {
+    set led to LOW
+    when button is HIGH goto on
+} initial
+
+state on {
+    set led to HIGH
+    when button is HIGH goto off
+}

@@ -1,0 +1,122 @@
+Model:
+    decl=Declaration
+    bricks+=Brick+
+    states+=State+
+;
+
+Declaration:
+    'application' name=ID
+;
+
+Brick: Sensor | Actuator | Buzzer | LCD | Potentiometer;
+
+Sensor:
+    'sensor' name=ID ':' pin=INT
+;
+
+Actuator:
+    'actuator' name=ID ':' pin=INT
+;
+
+Buzzer:
+    'buzzer' name=ID ':' pin=INT
+;
+
+LCD:
+    'lcd' name=ID ':' cols=INT 'x' rows=INT
+;
+
+Potentiometer:
+    'potentiometer' name=ID ':' analog=INT
+;
+
+State:
+    'state' name=ID '{' (actions+=Action | transitions+=Transition)+ '}' initial?='initial'
+;
+
+Action: SetAction | BeepAction | LCDAction;
+
+SetAction:
+    'set' target=[Actuator|ID] 'to' value=Signal
+;
+
+BeepAction:
+    kind=BeepKind target=[Buzzer|ID]
+;
+
+BeepKind:
+    'shortBeep'
+  | 'longBeep'
+  | 'sound'
+;
+
+LCDAction:
+    'display' msg=STRING 'on' target=[LCD|ID]
+;
+
+Transition: ConditionalTransition | TemporalTransition;
+
+ConditionalTransition:
+    'when' cond=Condition 'goto' next=[State|ID]
+;
+
+TemporalTransition:
+    'after' duration=INT unit=TimeUnit 'goto' next=[State|ID]
+;
+
+Condition: OrCond;
+
+OrCond:
+    left=AndCond ('or' ors+=AndCond)*
+;
+
+AndCond:
+    left=UnaryCond ('and' ands+=UnaryCond)*
+;
+
+UnaryCond:
+    'not' operand=UnaryCond
+  | primary=PrimaryCond
+;
+
+PrimaryCond:
+    SensorLevel
+  | PushEvent
+  | AnalogThreshold
+  | ParenCond
+;
+
+ParenCond:
+    '(' cond=Condition ')'
+;
+
+SensorLevel:
+    sensor=[Sensor|ID] 'is' value=Signal
+;
+
+PushEvent:
+    sensor=[Sensor|ID] 'pushed'
+;
+
+AnalogThreshold:
+    sensor=[Potentiometer|ID] op=Comp threshold=INT
+;
+
+Comp:
+    '>='
+  | '<'
+;
+
+Signal:
+    'HIGH'
+  | 'LOW'
+;
+
+TimeUnit:
+    'MS'
+  | 'S'
+;
+
+INT: /[0-9]+/;
+ID: /[a-z][A-Za-z0-9_]*/;
+STRING: /"[^"\r\n]*"/;
