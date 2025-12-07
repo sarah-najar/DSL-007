@@ -1,0 +1,128 @@
+// LanguIM Grammar for ArduinoML
+// This DSL provides the same capabilities as textX and ANTLR implementations
+
+language ArduinoML
+
+// Application declaration
+rule Application
+    = "app" name:ID ;
+
+// Brick definitions
+rule BrickDeclaration
+    = "brick" name:ID ":" brick_type:BrickType ;
+
+rule BrickType
+    = sensor:SensorBrick
+    | actuator:ActuatorBrick
+    | buzzer:BuzzerBrick
+    | lcd:LCDBrick
+    | potentiometer:PotentiometerBrick ;
+
+rule SensorBrick
+    = "digital_sensor" "pin" pin:INT ;
+
+rule ActuatorBrick
+    = "digital_actuator" "pin" pin:INT ;
+
+rule BuzzerBrick
+    = "buzzer" "pin" pin:INT ;
+
+rule LCDBrick
+    = "lcd" cols:INT "x" rows:INT ;
+
+rule PotentiometerBrick
+    = "analog_input" "pin" pin:INT ;
+
+// State definitions
+rule StateDeclaration
+    = "state" name:ID "{"
+        body:StateBody
+      "}"
+      initial:("initial")? ;
+
+rule StateBody
+    = elements:(StateElement)* ;
+
+rule StateElement
+    = action:Action
+    | transition:Transition ;
+
+// Actions
+rule Action
+    = set_action:SetAction
+    | lcd_action:LCDAction
+    | beep_action:BeepAction ;
+
+rule SetAction
+    = "set" target:ID "to" value:Signal ;
+
+rule LCDAction
+    = "display" message:STRING "on" screen:ID ;
+
+rule BeepAction
+    = "beep" "(" kind:BeepType ")" target:ID ;
+
+rule BeepType
+    = "short"
+    | "long"
+    | "sound" ;
+
+// Transitions
+rule Transition
+    = conditional:ConditionalTransition
+    | temporal:TemporalTransition ;
+
+rule ConditionalTransition
+    = "when" condition:Condition "then" next:ID ;
+
+rule TemporalTransition
+    = "after" duration:INT unit:TimeUnit "then" next:ID ;
+
+// Conditions
+rule Condition
+    = OrCondition ;
+
+rule OrCondition
+    = left:AndCondition (op:"or" right:AndCondition)* ;
+
+rule AndCondition
+    = left:UnaryCondition (op:"and" right:UnaryCondition)* ;
+
+rule UnaryCondition
+    = negation:("not")? operand:PrimaryCondition ;
+
+rule PrimaryCondition
+    = paren:"(" condition:Condition ")"
+    | sensor_level:SensorLevel
+    | push_event:PushEvent
+    | analog_threshold:AnalogThreshold ;
+
+rule SensorLevel
+    = sensor:ID "==" value:Signal ;
+
+rule PushEvent
+    = sensor:ID "pressed" ;
+
+rule AnalogThreshold
+    = sensor:ID comp:Comparator threshold:INT ;
+
+// Terminal rules
+rule Signal
+    = "HIGH"
+    | "LOW" ;
+
+rule TimeUnit
+    = "ms"
+    | "s" ;
+
+rule Comparator
+    = ">="
+    | "<" ;
+
+// Lexical rules
+ID = /[a-z][a-zA-Z0-9_]*/ ;
+INT = /[0-9]+/ ;
+STRING = /"[^"]*"/ ;
+
+// Skipped tokens
+SKIP = /\s+/ | /\/\/.*/ | /\/\*.*?\*\// ;

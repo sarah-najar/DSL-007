@@ -1,0 +1,19 @@
+// LanguIM Example: Simple Toggle Switch
+// Demonstrates basic state machine with sensor and actuator control
+
+app toggle
+
+brick button : digital_sensor pin 9
+brick led : digital_actuator pin 12
+brick bz : buzzer pin 8
+
+state off {
+    set led to LOW
+    when button == HIGH then on
+} initial
+
+state on {
+    set led to HIGH
+    beep(short) bz
+    when button == HIGH then off
+}

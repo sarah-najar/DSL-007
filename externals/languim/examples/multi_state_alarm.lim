@@ -1,0 +1,23 @@
+// LanguIM Example: Multi-State Alarm System
+// Demonstrates multiple state transitions with different outputs
+
+app multi_state_alarm
+
+brick button : digital_sensor pin 9
+brick led : digital_actuator pin 11
+brick bz : buzzer pin 10
+
+state quiet {
+    set led to LOW
+    when button == HIGH then buzz
+} initial
+
+state buzz {
+    beep(short) bz
+    when button == HIGH then light
+}
+
+state light {
+    set led to HIGH
+    when button == HIGH then quiet
+}

@@ -1,0 +1,17 @@
+// LanguIM Example: Temporal Transition
+// Demonstrates temporal transitions with timeout handling
+
+app temporal_after_push
+
+brick button : digital_sensor pin 9
+brick led : digital_actuator pin 12
+
+state idle {
+    set led to LOW
+    when button == HIGH then active
+} initial
+
+state active {
+    set led to HIGH
+    after 800 ms then idle
+}

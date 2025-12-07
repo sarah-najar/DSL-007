@@ -1,0 +1,17 @@
+// LanguIM Example: Dual Alarm with Complex Conditions
+// Demonstrates boolean logic in conditions (AND/OR operators)
+
+app dual_check_alarm
+
+brick b1 : digital_sensor pin 8
+brick b2 : digital_sensor pin 9
+brick bz : buzzer pin 10
+
+state idle {
+    when b1 == HIGH and b2 == HIGH then alarm
+} initial
+
+state alarm {
+    beep(short) bz
+    when b1 == LOW or b2 == LOW then idle
+}

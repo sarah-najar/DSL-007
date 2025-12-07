@@ -1,0 +1,19 @@
+// LanguIM Example: Simple Alarm
+// Demonstrates state transitions with button controls
+
+app alarm_simple
+
+brick button : digital_sensor pin 9
+brick led : digital_actuator pin 12
+brick bz : buzzer pin 8
+
+state idle {
+    set led to LOW
+    when button == HIGH then alarm
+} initial
+
+state alarm {
+    set led to HIGH
+    beep(short) bz
+    when button == LOW then idle
+}
