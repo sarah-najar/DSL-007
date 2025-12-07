@@ -1,7 +1,7 @@
 application multi_state_alarm
 sensor button:9
-actuator led:12
-buzzer bz:8
+actuator led:11
+buzzer bz:10
 
 state quiet {
     set led to LOW
