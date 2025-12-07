@@ -20,7 +20,7 @@ def validate_model(model):
             if b.analog < 0 or b.analog > 5:
                 raise ValueError(f"Illegal analog pin A{b.analog} for {b.name}")
         else:
-            if getattr(b, "pin", 0) not in {1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12}:
+            if getattr(b, "pin", 0) not in {8, 9, 10, 11, 12}:
                 raise ValueError(f"Illegal pin {b.pin} for {b.name}")
     state_names = set()
     initials = []
@@ -132,11 +132,11 @@ def collect_sensors(cond):
     elif kind == "AnalogThreshold":
         names.add(cond.sensor.name)
     elif kind == "AndCond":
-        parts = [cond.left] + list(getattr(cond, "right", []))
+        parts = [cond.left] + list(getattr(cond, "ands", []))
         for p in parts:
             names |= collect_sensors(p)
     elif kind == "OrCond":
-        parts = [cond.left] + list(getattr(cond, "right", []))
+        parts = [cond.left] + list(getattr(cond, "ors", []))
         for p in parts:
             names |= collect_sensors(p)
     elif kind == "UnaryCond":
@@ -156,10 +156,10 @@ def condition_to_expr(cond):
         pin = f"A{cond.sensor.analog}"
         return f"(analogRead({pin}) {cond.op} {cond.threshold})"
     if kind == "AndCond":
-        parts = [cond.left] + list(getattr(cond, "right", []))
+        parts = [cond.left] + list(getattr(cond, "ands", []))
         return " && ".join(f"({condition_to_expr(p)})" for p in parts)
     if kind == "OrCond":
-        parts = [cond.left] + list(getattr(cond, "right", []))
+        parts = [cond.left] + list(getattr(cond, "ors", []))
         return " || ".join(f"({condition_to_expr(p)})" for p in parts)
     if kind == "UnaryCond":
         inner = getattr(cond, "operand", None) or getattr(cond, "primary", None)

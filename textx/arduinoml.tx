@@ -67,11 +67,11 @@ TemporalTransition:
 Condition: OrCond;
 
 OrCond:
-    AndCond ('or' AndCond)*
+    left=AndCond ('or' ors+=AndCond)*
 ;
 
 AndCond:
-    UnaryCond ('and' UnaryCond)*
+    left=UnaryCond ('and' ands+=UnaryCond)*
 ;
 
 UnaryCond:

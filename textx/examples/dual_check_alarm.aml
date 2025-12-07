@@ -1,6 +1,6 @@
 application dual_check_alarm
-sensor b1:7
-sensor b2:8
+sensor b1:8
+sensor b2:9
 buzzer bz:10
 
 state idle {
