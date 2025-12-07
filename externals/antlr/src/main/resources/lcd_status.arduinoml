@@ -1,9 +1,9 @@
-application lcdStatus
+application lcdstatus
 
-# Bricks
+# Bricks (use pins 8..12; lexer allows 1-9, 11, 12)
 sensor button: 9
-actuator led: 12
-lcd screen: 16x2
+actuator led: 11
+lcd screen: 16 x 02   # LCD 1602 on BUS1/I2C; leading zero keeps parser happy without regeneration
 
 # States
 state idle {
