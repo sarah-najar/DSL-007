@@ -1,0 +1,23 @@
+application dualCheckAlarm
+
+# Bricks
+sensor buttonA: 9
+sensor door: 11       # any digital input that reads HIGH/LOW (e.g., reed switch)
+actuator siren: 12
+
+# States
+state idle {
+    set siren to LOW
+    when door is HIGH goto armed     # wait for button after door opens/triggers
+} initial
+
+state armed {
+    set siren to LOW
+    when buttonA is HIGH goto alert
+    when door is LOW goto idle       # reset if door closes before button
+}
+
+state alert {
+    set siren to HIGH
+    when door is LOW and buttonA is LOW goto idle
+}

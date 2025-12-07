@@ -1,0 +1,19 @@
+application lcdStatus
+
+# Bricks
+sensor button: 9
+actuator led: 12
+lcd screen: 16x2
+
+# States
+state idle {
+    set led to LOW
+    display "IDLE" on screen
+    when button is HIGH goto active
+} initial
+
+state active {
+    set led to HIGH
+    display "ACTIVE" on screen
+    when button is LOW goto idle
+}

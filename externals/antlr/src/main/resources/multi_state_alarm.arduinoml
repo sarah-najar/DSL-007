@@ -1,0 +1,24 @@
+application multiStateAlarm
+
+# Bricks
+sensor door: 9
+sensor window: 11
+actuator siren: 12
+buzzer buzzer1: 8
+
+# States
+state disarmed {
+    set siren to LOW
+    when door is HIGH or window is HIGH goto entryDelay
+} initial
+
+state entryDelay {
+    set siren to LOW
+    sound buzzer1
+    after 5 S goto alert
+}
+
+state alert {
+    set siren to HIGH
+    when not (door is HIGH or window is HIGH) goto disarmed
+}
