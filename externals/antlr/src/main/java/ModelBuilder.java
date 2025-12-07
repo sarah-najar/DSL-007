@@ -26,6 +26,16 @@ public class ModelBuilder extends ArduinomlBaseListener {
 
     private State currentState = null;
 
+    private State getOrCreateState(String name) {
+        State state = states.get(name);
+        if (state == null) {
+            state = new State();
+            state.setName(name);
+            states.put(name, state);
+        }
+        return state;
+    }
+
     @Override
     public void enterRoot(ArduinomlParser.RootContext ctx) {
         built = false;
@@ -85,10 +95,8 @@ public class ModelBuilder extends ArduinomlBaseListener {
 
     @Override
     public void enterState(ArduinomlParser.StateContext ctx) {
-        State s = new State();
-        s.setName(ctx.name.getText());
-        states.put(s.getName(), s);
-        currentState = s;
+        String stateName = ctx.name.getText();
+        currentState = getOrCreateState(stateName);
     }
 
     @Override
@@ -134,7 +142,7 @@ public class ModelBuilder extends ArduinomlBaseListener {
     public void enterConditionalTransition(ArduinomlParser.ConditionalTransitionContext ctx) {
         ConditionalTransition t = new ConditionalTransition();
         t.setCondition(buildCondition(ctx.condition()));
-        t.setNext(states.get(ctx.next.getText()));
+        t.setNext(getOrCreateState(ctx.next.getText()));
         currentState.getTransitions().add(t);
     }
 
@@ -143,7 +151,7 @@ public class ModelBuilder extends ArduinomlBaseListener {
         TemporalTransition t = new TemporalTransition();
         t.setDuration(Integer.parseInt(ctx.duration.getText()));
         t.setUnit(TimeUnit.valueOf(ctx.unit.getText()));
-        t.setNext(states.get(ctx.next.getText()));
+        t.setNext(getOrCreateState(ctx.next.getText()));
         currentState.getTransitions().add(t);
     }
 

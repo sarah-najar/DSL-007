@@ -1,0 +1,16 @@
+application greenButton
+
+# Declaring bricks
+sensor button: 9
+actuator led: 12
+
+# Declaring states
+state active {
+    set led to HIGH
+    when button is HIGH goto idle
+} initial
+
+state idle {
+    set led to LOW
+    when button is HIGH goto active
+}
