@@ -1,0 +1,17 @@
+// LanguIM Example: State Alarm Toggle
+// Simplified toggle example for alarm state switching
+
+app state_alarm_toggle
+
+brick button : digital_sensor pin 9
+brick led : digital_actuator pin 12
+
+state off {
+    set led to LOW
+    when button == HIGH then on
+} initial
+
+state on {
+    set led to HIGH
+    when button == HIGH then off
+}

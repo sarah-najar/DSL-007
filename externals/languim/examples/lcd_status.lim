@@ -1,0 +1,20 @@
+// LanguIM Example: LCD Status Display
+// Demonstrates LCD display actions with state-based messages
+
+app lcd_status
+
+brick button : digital_sensor pin 9
+brick led : digital_actuator pin 10
+brick screen : lcd 16x2
+
+state ready {
+    set led to LOW
+    display "READY" on screen
+    when button == HIGH then alarm
+} initial
+
+state alarm {
+    set led to HIGH
+    display "ALARM ON" on screen
+    when button == LOW then ready
+}
