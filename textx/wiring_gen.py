@@ -23,15 +23,14 @@ def validate_model(model):
             continue
         if b.__class__.__name__ == "LCD":
             continue  # LCD has no direct pin mapping here
-        allowed_all = {9, 10, 11, 12}
-        forbidden_bus = set()
+        base_allowed = {8, 9, 10, 11, 12}
         if lcd_present:
-            # BUS1 mapping: rs=2, rw=3, en=4, d4=5, d5=6, d6=7, d7=8
-            forbidden_bus = {2, 3, 4, 5, 6, 7, 8}
-        if getattr(b, "pin", 0) in forbidden_bus:
-            raise ValueError(f"Pin {b.pin} is reserved for LCD bus; pick from {sorted(allowed_all - forbidden_bus)} for {b.name}")
-        if getattr(b, "pin", 0) not in allowed_all - forbidden_bus:
-            raise ValueError(f"Illegal pin {b.pin} for {b.name} (allowed: {sorted(allowed_all - forbidden_bus)})")
+            # BUS1 mapping reserves 2..8 for LCD signals
+            allowed = {9, 10, 11, 12}
+        else:
+            allowed = base_allowed
+        if getattr(b, "pin", 0) not in allowed:
+            raise ValueError(f"Illegal pin {b.pin} for {b.name} (allowed: {sorted(allowed)})")
     state_names = set()
     initials = []
     for s in model.states:
