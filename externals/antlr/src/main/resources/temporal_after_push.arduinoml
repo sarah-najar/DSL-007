@@ -1,0 +1,16 @@
+application temporalAfterPush
+
+# Bricks
+sensor button: 9
+actuator led: 12
+
+# States
+state waitingState {
+    set led to LOW
+    when button pushed goto onState
+} initial
+
+state onState {
+    set led to HIGH
+    after 03 S goto waitingState
+}

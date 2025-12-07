@@ -37,7 +37,7 @@ buzzer
 
 // lcd screen : On a un nombre defini de colonnes et de lignes pour l'ecran
 lcd
-    : 'lcd' id=IDENTIFIER ':' columns=INT 'x' rows=INT
+    : 'lcd' id=IDENTIFIER ':' columns=(INT|PORT_NUMBER) 'x' rows=(INT|PORT_NUMBER)
     ;
 
 // nom + broche

@@ -1,0 +1,15 @@
+application alarmSimple
+
+# Bricks
+sensor button: 9
+actuator siren: 12
+
+# States
+state idle {
+    set siren to LOW
+    when button is HIGH goto alert
+} initial
+
+state alert {
+    set siren to HIGH
+}

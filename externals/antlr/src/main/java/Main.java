@@ -1,8 +1,6 @@
 import io.github.mosser.arduinoml.externals.antlr.ArduinomlLexer;
 import io.github.mosser.arduinoml.externals.antlr.ArduinomlParser;
 import io.github.mosser.arduinoml.kernel.App;
-import io.github.mosser.arduinoml.kernel.generator.ToWiring;
-import io.github.mosser.arduinoml.kernel.generator.Visitor;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -49,7 +47,7 @@ public class Main {
     }
 
     private static void exportToCode(App theApp) {
-        Visitor codeGenerator = new ToWiring();
+        AntlrToWiring codeGenerator = new AntlrToWiring();
         theApp.accept(codeGenerator);
         System.out.println(codeGenerator.getResult());
     }

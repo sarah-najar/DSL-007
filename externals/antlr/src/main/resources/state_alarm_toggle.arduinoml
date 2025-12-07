@@ -1,0 +1,16 @@
+application stateAlarmToggle
+
+# Bricks
+sensor button: 9
+actuator led: 12
+
+# States
+state offState {
+    set led to LOW
+    when button pushed goto onState
+} initial
+
+state onState {
+    set led to HIGH
+    when button pushed goto offState
+}
