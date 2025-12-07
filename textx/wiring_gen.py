@@ -12,6 +12,7 @@ def load_model(model_path: str):
 
 def validate_model(model):
     brick_names = set()
+    lcd_present = any(b.__class__.__name__ == "LCD" for b in model.bricks)
     for b in model.bricks:
         if b.name in brick_names:
             raise ValueError(f"Duplicate brick name: {b.name}")
@@ -19,9 +20,18 @@ def validate_model(model):
         if b.__class__.__name__ == "Potentiometer":
             if b.analog < 0 or b.analog > 5:
                 raise ValueError(f"Illegal analog pin A{b.analog} for {b.name}")
-        else:
-            if getattr(b, "pin", 0) not in {8, 9, 10, 11, 12}:
-                raise ValueError(f"Illegal pin {b.pin} for {b.name}")
+            continue
+        if b.__class__.__name__ == "LCD":
+            continue  # LCD has no direct pin mapping here
+        allowed_all = {9, 10, 11, 12}
+        forbidden_bus = set()
+        if lcd_present:
+            # BUS1 mapping: rs=2, rw=3, en=4, d4=5, d5=6, d6=7, d7=8
+            forbidden_bus = {2, 3, 4, 5, 6, 7, 8}
+        if getattr(b, "pin", 0) in forbidden_bus:
+            raise ValueError(f"Pin {b.pin} is reserved for LCD bus; pick from {sorted(allowed_all - forbidden_bus)} for {b.name}")
+        if getattr(b, "pin", 0) not in allowed_all - forbidden_bus:
+            raise ValueError(f"Illegal pin {b.pin} for {b.name} (allowed: {sorted(allowed_all - forbidden_bus)})")
     state_names = set()
     initials = []
     for s in model.states:
@@ -56,6 +66,11 @@ def to_wiring(model) -> str:
     emit(f"// Application name: {app_name}")
     emit("long debounce = 200;")
     emit("")
+    if lcds:
+        emit("#include <LiquidCrystal.h>")
+        emit("// LCD BUS1 mapping: rs=2, rw=3, en=4, d4=5, d5=6, d6=7, d7=8")
+        emit("LiquidCrystal lcd(2, 3, 4, 5, 6, 7, 8);")
+        emit("")
 
     emit("enum STATE { " + ", ".join(s.name for s in model.states) + " };")
     emit(f"STATE currentState = {initial_state.name};")
@@ -72,7 +87,13 @@ def to_wiring(model) -> str:
     for a in actuators:
         emit(f"pinMode({a.pin}, OUTPUT); // {a.name}", 1)
     for lcd in lcds:
-        emit(f"// {lcd.name} [{lcd.cols}x{lcd.rows}] LCD (no pin setup here)", 1)
+        emit(f"// {lcd.name} [{lcd.cols}x{lcd.rows}] LCD on BUS1", 1)
+        emit("pinMode(3, OUTPUT); // RW", 1)
+        emit("digitalWrite(3, LOW); // tie RW to GND", 1)
+    if lcds:
+        first = lcds[0]
+        emit(f"lcd.begin({first.cols}, {first.rows});", 1)
+        emit("delay(50);", 1)
     emit("}")
     emit("")
 
@@ -104,7 +125,9 @@ def emit_action(action, emit, indent):
         emit(f"digitalWrite({action.target.pin}, LOW);", indent)
     elif kind == "LCDAction":
         msg = strip_quotes(action.msg)
-        emit(f"// LCD display on {action.target.name}: {msg}", indent)
+        pad = msg.ljust(16)[:16]
+        emit("lcd.setCursor(0,0);", indent)
+        emit(f'lcd.print("{pad}");', indent)
 
 
 def emit_transition(tr, emit, indent):

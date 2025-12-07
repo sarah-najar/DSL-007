@@ -1,6 +1,6 @@
 application lcd_status
 sensor button:9
-actuator led:12
+actuator led:10
 lcd screen:16x2
 
 state ready {
