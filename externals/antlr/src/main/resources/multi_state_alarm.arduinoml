@@ -15,7 +15,7 @@ state disarmed {
 state entryDelay {
     set siren to LOW
     sound buzzer1
-    after 5 S goto alert
+    after 05 S goto alert
 }
 
 state alert {

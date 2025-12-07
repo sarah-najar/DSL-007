@@ -150,7 +150,7 @@ public class ModelBuilder extends ArduinomlBaseListener {
     public void enterTemporalTransition(ArduinomlParser.TemporalTransitionContext ctx) {
         TemporalTransition t = new TemporalTransition();
         t.setDuration(Integer.parseInt(ctx.duration.getText()));
-        t.setUnit(TimeUnit.valueOf(ctx.unit.getText()));
+        t.setUnit(TimeUnit.valueOf(ctx.unit.getText().toLowerCase()));
         t.setNext(getOrCreateState(ctx.next.getText()));
         currentState.getTransitions().add(t);
     }
